@@ -91,7 +91,30 @@ class DatabaseManager:
             cur.execute('SELECT * FROM prizes WHERE used = 0 ORDER BY RANDOM()')
             return cur.fetchall()[0]
     
-  
+    def get_winners_count(self, prize_id):
+        conn = sqlite3.connect(self.database)
+        with conn:
+            cur = conn.cursor()
+            cur.execute('SELECT count(*) from winners where prize_id=? ', (prize_id, ))
+            return cur.fetchall()[0][0]
+   
+   
+    
+    def get_rating(self):
+        conn = sqlite3.connect(self.database)
+        with conn:
+            cur = conn.cursor()
+            cur.execute('''
+SELECT users.user_name,count(winners.prize_id) as count_prize from winners
+JOIN users on winners.user_id=users.user_id
+group by winners.user_id
+order by count_prize desc
+limit 5                        
+''')
+            return cur.fetchall()
+
+
+
 def hide_img(img_name):
     image = cv2.imread(f'img/{img_name}')
     blurred_image = cv2.GaussianBlur(image, (15, 15), 0)
